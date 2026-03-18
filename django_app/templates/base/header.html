@@ -13,37 +13,17 @@
   </a>
 
   <div class="hidden md:flex items-center gap-6 text-sm text-slate-300">
-    <a href="#carte" class="hover:text-white transition-colors">Carte</a>
-    <a href="#prediction" class="hover:text-white transition-colors">Prédictions</a>
- 
+    <a href="{% url 'predictions' %}" class="hover:text-white transition-colors">Prédictions</a>
+    <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
   </div>
 
   <div class="flex items-center gap-3">
-    <a href="#auth">
+    <a href="{% url 'login' %}">
       <button class="btn-outline text-sm py-2 px-4">Connexion</button>
     </a>
-    <a href="#auth">
+    <a href="{% url 'signup' %}">
       <button class="btn-primary text-sm py-2 px-4">S'inscrire</button>
     </a>
   </div>
 </nav>
 </header>
-
-<!-- {% block header %}
-
-<nav>
-  <div>
-    <span>Prédi'lection</span>
-  </div>
-
-  <div>
-    {% if user.is_authenticated %}
-    <a href="{% url 'home' %}">
-      Accueil
-    </a>
-    <a href="{% url 'prediction' %}">
-      Predictions
-    {% endif %}
-  </div>
-</nav>
-{% endblock %} -->
