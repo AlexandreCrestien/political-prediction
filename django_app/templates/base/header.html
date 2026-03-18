@@ -18,12 +18,19 @@
   </div>
 
   <div class="flex items-center gap-3">
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button class="btn-primary text-sm py-2 px-4">Logout</button>
+    </form>
+    {% else %}
     <a href="{% url 'login' %}">
       <button class="btn-outline text-sm py-2 px-4">Connexion</button>
     </a>
     <a href="{% url 'signup' %}">
       <button class="btn-primary text-sm py-2 px-4">S'inscrire</button>
     </a>
+    {% endif %}
   </div>
 </nav>
 </header>
