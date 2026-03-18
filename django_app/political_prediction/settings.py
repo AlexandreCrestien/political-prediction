@@ -36,8 +36,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "apps.core",
-    #"apps.users",
-    #"apps.predictions",
+    "apps.users",
+    "apps.predictions",
 
     'django.contrib.admin',
     'django.contrib.auth',

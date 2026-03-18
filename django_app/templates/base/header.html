@@ -1,4 +1,15 @@
-{% block header %}
+<header>
+  <nav>
+    <ul>
+        <li><a href="{% url 'home' %}">Accueil</a></li>
+        <li><a href="{% url 'predictions' %}">Predictions</a></li>
+        <li><a href="{% url 'signup' %}">inscription</a></li>
+        <li><a href="{% url 'login' %}">connexion</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- {% block header %}
 
 <nav>
   <div>
@@ -6,11 +17,13 @@
   </div>
 
   <div>
-    <!--{% if user.is_authenticated %}-->
-    <a href="{% url 'accueil' %}">
+    {% if user.is_authenticated %}
+    <a href="{% url 'home' %}">
       Accueil
     </a>
-    <!--{% endif %}-->
+    <a href="{% url 'prediction' %}">
+      Predictions
+    {% endif %}
   </div>
 </nav>
-{% endblock %}
+{% endblock %} -->
