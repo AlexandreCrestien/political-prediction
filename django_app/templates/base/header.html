@@ -1,0 +1,16 @@
+{% block header %}
+
+<nav>
+  <div>
+    <span>Prédi'lection</span>
+  </div>
+
+  <div>
+    <!--{% if user.is_authenticated %}-->
+    <a href="{% url 'accueil' %}">
+      Accueil
+    </a>
+    <!--{% endif %}-->
+  </div>
+</nav>
+{% endblock %}

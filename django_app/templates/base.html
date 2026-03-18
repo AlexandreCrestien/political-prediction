@@ -1,11 +1,16 @@
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      {% block title %} Political Prediction {%endblock%}
+      {% block title %} Prédi'lection{%endblock%}
     </title>
   </head>
   <body>
-    <a> test</a>   
+    {%include "base/header.html"%}
+    <main>
+      {%block content%} {%endblock%}
+    </main> 
+    {% include "base/footer.html"%}
 </body>
 </html>
