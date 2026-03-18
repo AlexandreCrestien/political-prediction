@@ -125,3 +125,5 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+LOGOUT_REDIRECT_URL = "accueil"

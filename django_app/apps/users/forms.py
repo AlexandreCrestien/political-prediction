@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 
 class SignupForm(UserCreationForm):
@@ -61,3 +61,19 @@ class SignupForm(UserCreationForm):
             "first_name": forms.TextInput(attrs={"placeholder": "Votre prénom"}),
             "last_name": forms.TextInput(attrs={"placeholder": "Votre nom de famille"}),
         }
+
+class LoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        required=True,
+        label='Votre adresse email',
+        widget=forms.EmailInput(attrs={"placeholder": "Entrez votre adresse email"}),
+        error_messages={
+            "required": "L'adresse email est obligatoire.",
+            "invalid": "Entrez une adresse email valide.",
+        },
+    )
+    
+    password = forms.CharField(
+        label='Mot de passe',
+        widget=forms.PasswordInput(attrs={"placeholder": "Votre mot de passe"}),
+    )

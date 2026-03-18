@@ -13,11 +13,11 @@
         {% csrf_token %}
 
     <!-- Erreurs globales (ex: mots de passe différents) -->
-        <!-- {% if form.non_field_errors %}
+        {% if form.non_field_errors %}
         <div class="alert alert-error shadow-sm mb-6">
           <span>{{ form.non_field_errors|join:", " }}</span>
         </div>
-        {% endif %} -->
+        {% endif %}
 
         <!-- Champs du formulaire -->
         {% for field in form %} {% if field.name != 'password2' %}
