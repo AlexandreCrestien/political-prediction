@@ -1,7 +1,75 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-<body>
-  <a> inscription</a>
-</body>
+
+<div class="flex items-center justify-center p-4">
+  <div class="card bg-base-100 w-full max-w-md shadow-xl">
+    <div class="card-body p-8">
+      <h2 class="card-title text-2xl font-bold text-center mb-6">
+        Inscription
+      </h2>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+    <!-- Erreurs globales (ex: mots de passe différents) -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-error shadow-sm mb-6">
+          <span>{{ form.non_field_errors|join:", " }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Champs du formulaire -->
+        {% for field in form %} {% if field.name != 'password2' %}
+        <div class="form-control mb-4">
+          <label class="label" for="{{ field.id_for_label }}">
+            <span class="label-text font-semibold">{{ field.label }}</span>
+          </label>
+
+          {{ field }} {% if field.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error"
+              >{{ field.errors|join:", " }}</span
+            >
+          </label>
+          {% endif %}
+        </div>
+        {% endif %} {% endfor %}
+
+        <!-- Confirmation mot de passe (traité séparément pour l'ordre) -->
+        {% if form.password2 %}
+        <div class="form-control mb-4">
+          <label class="label" for="{{ form.password2.id_for_label }}">
+            <span class="label-text font-semibold"
+              >{{ form.password2.label }}</span
+            >
+          </label>
+
+          {{ form.password2 }} {% if form.password2.errors %}
+          <ul class="list-disc list-inside text-error space-y-1 mt-1">
+            {% for error in form.password2.errors %}
+            <li class="text-sm">{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary w-full">
+          Créer un compte
+        </button>
+
+        <!-- Lien de connexion -->
+        <div class="text-center mt-4">
+          <p class="text-sm">
+            Vous avez déjà un compte ?
+            <a href="{% url 'login' %}" class="link link-primary"
+              >Connectez-vous</a
+            >
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
