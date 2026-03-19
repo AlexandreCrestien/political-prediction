@@ -211,3 +211,4 @@ __marimo__/
 # Insee csv files
 src_insee/
 src/
+src_election/
