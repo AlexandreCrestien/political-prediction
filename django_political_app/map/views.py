@@ -4,8 +4,9 @@ import pandas as pd
 from django.views.generic import TemplateView
 from django.core.cache import cache
 from folium.plugins import FastMarkerCluster
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class MapView(TemplateView):
+class MapView(LoginRequiredMixin, TemplateView):
     template_name = 'map.html'
 
     def get_coords_df(self):
