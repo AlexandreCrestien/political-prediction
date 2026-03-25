@@ -1,16 +1,16 @@
-from fastapi import FastAPI, Request
-from api.v1.routers.api import api_router
+from fastapi import FastAPI
+from app.routes import communes
 
 app = FastAPI(
     version="1.0.0"
 )
+app.include_router(communes.router)
 
 origins = [
     "http://localhost",
     "http://localhost:8080"
 ]
 
-app.include_router(api_router)
 
 @app.get("/")
 async def root():
