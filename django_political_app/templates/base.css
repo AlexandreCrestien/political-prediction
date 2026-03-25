@@ -1,4 +1,3 @@
-
 :root {
     --teal:    #61988E;
     --dark:    #143642;
@@ -7,7 +6,7 @@
     --dark-mid: #1e4f63;
     --crimson-light: #8c1220;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box;}
 body { font-family: 'DM Sans', sans-serif; background: #0d2630; color: #e8f0ef; }
 .playfair { font-family: 'Playfair Display', serif; }
 .mono { font-family: 'DM Mono', monospace; }
