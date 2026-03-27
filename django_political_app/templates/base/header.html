@@ -1,41 +1,89 @@
 <header>
-  <nav class="px-8 py-3 flex items-center justify-between">
-  <a href="{% url 'home' %}" class="flex items-center gap-3">
-    <!-- Logo mark -->
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="15" stroke="#61988E" stroke-width="1.5"/>
-      <path d="M8 22 L16 8 L24 22" stroke="#61988E" stroke-width="2" stroke-linejoin="round" fill="none"/>
-      <line x1="10" y1="18" x2="22" y2="18" stroke="#5E0B15" stroke-width="1.5"/>
-    </svg>
-    <span class="playfair text-xl font-bold tracking-tight">
-      Predi<span style="color:var(--crimson)">'</span>lection
-    </span>
-  </a>
+  <nav class="bg-gray-800/50">
+    <div class="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <!-- Logo and brand -->
+        <div class="flex items-center gap-3">
+          <a href="{% url 'home' %}" class="flex items-center gap-3">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="15" stroke="#61988E" stroke-width="1.5"/>
+              <path d="M8 22 L16 8 L24 22" stroke="#61988E" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <line x1="10" y1="18" x2="22" y2="18" stroke="#5E0B15" stroke-width="1.5"/>
+            </svg>
+            <span class="playfair text-xl font-bold tracking-tight">
+              Predi<span style="color:var(--crimson)">'</span>lection
+            </span>
+          </a>
+        </div>
 
-  <div class="hidden md:flex items-center gap-6 text-sm text-slate-300">
-    {% if user.is_authenticated %}
-    <a href="{% url 'predictions' %}" class="hover:text-white transition-colors">Prédictions</a>
-    <a href="{% url 'map' %}" class="hover:text-white transition-colors">Carte</a>
-    <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
-    {% else %}
-    <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
-    {% endif %}
-  </div>
+        <!-- Desktop navigation -->
+        <div class="hidden md:flex items-center gap-6 text-sm text-slate-300">
+          {% if user.is_authenticated %}
+          <a href="{% url 'predictions' %}" class="hover:text-white transition-colors">Prédictions</a>
+          <a href="{% url 'map' %}" class="hover:text-white transition-colors">Carte</a>
+          <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
+          {% else %}
+          <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
+          {% endif %}
+        </div>
 
-  <div class="flex items-center gap-3">
-    {% if user.is_authenticated %}
-    <form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button class="btn-primary text-sm py-2 px-4">Logout</button>
-    </form>
-    {% else %}
-    <a href="{% url 'login' %}">
-      <button class="btn-outline text-sm py-2 px-4">Connexion</button>
-    </a>
-    <a href="{% url 'signup' %}">
-      <button class="btn-primary text-sm py-2 px-4">S'inscrire</button>
-    </a>
-    {% endif %}
-  </div>
-</nav>
+        <!-- Auth buttons -->
+        <div class="hidden md:flex items-center gap-3">
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn-primary text-sm py-2 px-4">Logout</button>
+          </form>
+          {% else %}
+          <a href="{% url 'login' %}">
+            <button class="btn-outline text-sm py-2 px-4">Connexion</button>
+          </a>
+          <a href="{% url 'signup' %}">
+            <button class="btn-primary text-sm py-2 px-4">S'inscrire</button>
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Mobile menu button -->
+        <div class="-mr-2 flex md:hidden">
+          <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
+            <span class="absolute -inset-0.5"></span>
+            <span class="sr-only">Open main menu</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
+              <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 not-in-aria-expanded:hidden">
+              <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <el-disclosure id="mobile-menu" hidden class="block md:hidden">
+      <div class="space-y-1 px-2 pt-2 pb-3 sm:px-3">
+        {% if user.is_authenticated %}
+        <a href="{% url 'predictions' %}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Prédictions</a>
+        <a href="{% url 'map' %}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Carte</a>
+        {% endif %}
+        <a href="{% url 'home' %}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Accueil</a>
+      </div>
+      <div class="border-t border-white/10 pt-4 pb-3">
+        {% if user.is_authenticated %}
+        <div class="mt-3 space-y-1 px-2">
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white">Logout</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="mt-3 space-y-1 px-2">
+          <a href="{% url 'login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white">Connexion</a>
+          <a href="{% url 'signup' %}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white">S'inscrire</a>
+        </div>
+        {% endif %}
+      </div>
+    </el-disclosure>
+  </nav>
 </header>
