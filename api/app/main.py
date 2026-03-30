@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from app.routes import communes
+from app.routers.api import api_router
 
 app = FastAPI(
     version="1.0.0"
 )
-app.include_router(communes.router)
+app.include_router(api_router)
 
 origins = [
     "http://localhost",
