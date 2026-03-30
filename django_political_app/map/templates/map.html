@@ -1,29 +1,53 @@
-<!-- map.html -->
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="fixed-grid has-4-cols">
-  <div class="grid">
-    <div class="cell is-col-span-3">
-        <div class="box">
-        {{ map|safe }}
-        </div>
-    </div>
-    <div class="cell">
-        <div class="card">
-            <div class="card-content">
-                <div class="content">
-                    <div class="field">
-                        <label class="label">Name</label>
-                            <div class="control">
-                                <input class="input" type="text" placeholder="Text input">
-                            </div>
+<section class="section">
+    <div class="container">
+        <h1 class="title">Explorateur de départements : {{ dept_nom }}</h1>
+        
+        <div class="fixed-grid has-4-cols">
+            <div class="grid">
+                <div class="cell is-col-span-3">
+                    <div class="box p-0" style="overflow: hidden; height: 600px;">
+                        {{ map|safe }}
+                    </div>
+                </div>
+
+                <div class="cell">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">Recherche Locale</p>
+                        </header>
+                        <div class="card-content">
+                            <form method="get" action="">
+                                <div class="field">
+                                    <label class="label">Choisir un département</label>
+                                    <div class="control is-expanded">
+                                        <div class="select is-fullwidth">
+                                            <select name="department" onchange="this.form.submit()">
+                                                {% for dept in departments %}
+                                                    <option value="{{ dept.code }}" {% if dept.code == current_dept %}selected{% endif %}>
+                                                        {{ dept.code }} - {{ dept.nom }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field mt-4">
+                                    <div class="control">
+                                        <button type="submit" class="button is-link is-fullwidth">
+                                            Mettre à jour la carte
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-  </div>
-</div>
+</section>
 
 {% endblock %}

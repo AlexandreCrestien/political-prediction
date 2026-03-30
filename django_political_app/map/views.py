@@ -1,44 +1,65 @@
-# views.py
 import folium
-import pandas as pd
 from django.views.generic import TemplateView
 from django.core.cache import cache
-from folium.plugins import FastMarkerCluster
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .services import GeoService
 
 class MapView(LoginRequiredMixin, TemplateView):
     template_name = 'map.html'
 
-    def get_coords_df(self):
-        """Charge le CSV en cache pour éviter le re-téléchargement à chaque requête."""
-        df = cache.get('communes_coords')
-        if df is None:
-            url_coords = "https://www.data.gouv.fr/fr/datasets/r/dbe8a621-a9c4-4bc3-9cae-be1699c5ff25"
-            df = pd.read_csv(url_coords, sep=',', dtype=str,
-                             usecols=['code_commune_INSEE', 'nom_commune_postal', 'latitude', 'longitude'])
-            df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
-            df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
-            df = df.dropna(subset=['latitude', 'longitude'])
-            cache.set('communes_coords', df, timeout=60 * 60 * 24)  # Cache 24h
-        return df
-
     def get_context_data(self, **kwargs):
-        df = self.get_coords_df()
+        context = super().get_context_data(**kwargs)
+        service = GeoService()
 
-        m = folium.Map(location=[46.232193, 2.209667], zoom_start=6, tiles='cartodbpositron')
+        # 1. On cache la liste des départements (ça ne change presque jamais)
+        departments = cache.get('all_departments')
+        if not departments:
+            departments = service.get_all_departments()
+            cache.set('all_departments', departments, timeout=60 * 60 * 24)
 
-        # FastMarkerCluster : passe toutes les coords en une seule fois (JS natif, très rapide)
-        callback = """
-            function(row) {
-                var marker = L.circleMarker(
-                    new L.LatLng(row[0], row[1]),
-                    {radius: 4, color: 'red', fillColor: 'red', fillOpacity: 0.8, weight: 0}
-                );
-                marker.bindTooltip(row[2] + ' : ' + row[3]);
-                return marker;
-            }
-        """
-        data = df[['latitude', 'longitude', 'nom_commune_postal', 'code_commune_INSEE']].values.tolist()
-        FastMarkerCluster(data=data, callback=callback).add_to(m)
+        # 2. Récupération du code sélectionné
+        dept_code = self.request.GET.get('department', '75')
+        
+        # 3. On cache les données du département pour éviter les appels API inutiles
+        cache_key = f'dept_data_{dept_code}'
+        data = cache.get(cache_key)
+        if not data:
+            data = service.get_department_data(dept_code)
+            cache.set(cache_key, data, timeout=60 * 60 * 2) # Cache 2h
 
-        return {"map": m._repr_html_()}
+        if data:
+            # Création de la carte
+            m = folium.Map(
+                location=data['center'], 
+                zoom_start=9,
+                tiles="cartodbpositron"
+            )
+
+            # --- LE POINT FAÇON GOOGLE MAPS (Pour la préfecture) ---
+            folium.Marker(
+                location=data['center'],
+                popup=f"Préfecture : {data['dept_nom']}",
+                tooltip="Cliquez pour voir",
+                icon=folium.Icon(color="red", icon="info-sign") # "Pin" classique
+            ).add_to(m)
+
+            # --- LES AUTRES COMMUNES ---
+            for commune in data['communes']:
+                # On évite de doubler le point si c'est la préfecture
+                if commune['nom'] != data['dept_nom']:
+                    folium.CircleMarker(
+                        location=[commune['lat'], commune['lon']],
+                        radius=4,
+                        popup=commune['nom'],
+                        color="#3273dc",
+                        fill=True,
+                        fill_opacity=0.6,
+                        weight=1
+                    ).add_to(m)
+
+            context['map'] = m._repr_html_()
+            context['dept_nom'] = data['dept_nom']
+            context['current_dept'] = dept_code
+            context['departments'] = departments
+        
+        return context
