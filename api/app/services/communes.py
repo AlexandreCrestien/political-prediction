@@ -15,3 +15,12 @@ class CommuneService:
     @staticmethod
     def get_all(db: Session, skip: int = 0, limit: int = 100):
         return db.query(Communes).offset(skip).limit(limit).all()
+    
+    @staticmethod
+    def get_by_department(db: Session, department_code: str, year: str = None):
+        query = select(Communes).where(Communes.code_insee.startswith(department_code))
+        if year:
+            query = query.where(Communes.years == year)
+        
+        result = db.execute(query)
+        return result.scalars().all()

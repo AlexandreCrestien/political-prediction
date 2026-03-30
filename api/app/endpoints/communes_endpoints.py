@@ -29,6 +29,15 @@ async def search_communes(
         return status.HTTP_400_BAD_REQUEST
     return stats
 
+@router.get("/department/{department_code}", status_code=status.HTTP_200_OK, response_model=List[CommuneResponse])
+async def get_communes_by_department(
+    department_code: str,
+    year: Optional[str] = Query(None, description="Année des statistiques"),
+    db: Session = Depends(get_db)
+):
+    stats = CommuneService.get_by_department(db, department_code=department_code, year=year)
+    return stats
+
 
 
 
