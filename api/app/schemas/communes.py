@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from typing import Optional, Any
+from typing import List, Optional, Any
 
 class CommuneResponse(BaseModel):
     id: int
@@ -15,3 +15,9 @@ class CommuneResponse(BaseModel):
 
     # Permet de convertir l'objet SQLAlchemy en Pydantic automatiquement
     model_config = ConfigDict(from_attributes=True)
+
+class PaginatedCommuneResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    data: List[CommuneResponse]

@@ -26,4 +26,5 @@ urlpatterns = [
     path('', include('predictions.urls')),
     path('', include('users.urls')),
     path('', include('map.urls')),
+    path('', include('detail.urls')),
 ]
