@@ -2,46 +2,59 @@ import requests
 
 class GeoService:
     BASE_URL = "https://geo.api.gouv.fr"
+    BASE_URL_LOCAL = "http://0.0.0.0:8080"
 
     def get_all_departments(self):
         url = f"{self.BASE_URL}/departements?fields=nom,code"
         response = requests.get(url)
         return response.json() if response.status_code == 200 else []
 
-    def get_department_data(self, department_code):
-        """
-        Récupère la chef-lieu (préfecture) et toutes les communes d'un département.
-        """
-        # 1. Récupérer les infos du département (pour trouver la préfecture)
-        dept_url = f"{self.BASE_URL}/departements/{department_code}?fields=nom,code,chefLieu"
-        dept_resp = requests.get(dept_url)
-        
-        # 2. Récupérer toutes les communes du département
-        communes_url = f"{self.BASE_URL}/communes?codeDepartement={department_code}&fields=nom,code,centre,population"
-        communes_resp = requests.get(communes_url)
+    def get_election_results_by_department(self, department_code):
 
-        if dept_resp.status_code == 200 and communes_resp.status_code == 200:
-            dept_info = dept_resp.json()
-            communes = communes_resp.json()
+        url = f"{self.BASE_URL_LOCAL}/communes/department/{department_code}?year=2022&limit=1000"
+        try:
+            response = requests.get(url)
+            return response.json() if response.status_code == 200 else {}
+        except Exception:
+            return {}
+
+    def get_full_map_data(self, department_code):
+        # 1. Données Géo
+        dept_url = f"{self.BASE_URL}/departements/{department_code}?fields=nom,code,chefLieu"
+        communes_url = f"{self.BASE_URL}/communes?codeDepartement={department_code}&fields=nom,code,centre,contour"
+        
+        dept_info = requests.get(dept_url).json()
+        geo_communes = requests.get(communes_url).json()
+
+        # 2. Données Élections (Transformation en dictionnaire pour accès rapide)
+        election_resp = self.get_election_results_by_department(department_code)
+        election_list = election_resp.get('data', []) if isinstance(election_resp, dict) else election_resp
+        election_map = {str(item['code_insee']): item for item in election_list}
+
+        points = []
+        chef_lieu_code = dept_info.get('chefLieu')
+        center_coords = [46.22, 2.21]
+
+        for c in geo_communes:
+            code = c['code']
+            stats = election_map.get(code, {})
             
-            # On cherche les coordonnées de la préfecture pour centrer la carte
-            # Le chefLieu est un code commune.
-            center_coords = [46.2276, 2.2137]  # Par défaut : Centre de la France
-            chef_lieu_code = dept_info.get('chefLieu')
-            
-            points = []
-            for c in communes:
-                if 'centre' in c:
-                    # Format API : [longitude, latitude] -> Folium [latitude, longitude]
-                    lat, lon = c['centre']['coordinates'][1], c['centre']['coordinates'][0]
-                    points.append({'nom': c['nom'], 'lat': lat, 'lon': lon})
-                    
-                    if c['code'] == chef_lieu_code:
-                        center_coords = [lat, lon]
-            
-            return {
-                "center": center_coords,
-                "communes": points,
-                "dept_nom": dept_info.get('nom')
-            }
-        return None
+            if 'centre' in c:
+                lat, lon = c['centre']['coordinates'][1], c['centre']['coordinates'][0]
+                if code == chef_lieu_code:
+                    center_coords = [lat, lon]
+
+                points.append({
+                    'nom': c['nom'],
+                    'code_insee': code,
+                    'lat': lat,
+                    'lon': lon,
+                    'contour': c.get('contour'),
+                    'stats': stats
+                })
+
+        return {
+            "center": center_coords,
+            "communes": points,
+            "dept_nom": dept_info.get('nom')
+        }

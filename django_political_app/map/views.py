@@ -7,55 +7,85 @@ from .services import GeoService
 class MapView(LoginRequiredMixin, TemplateView):
     template_name = 'map.html'
 
+    def get_city_color(self, stats):
+        """Détermine la couleur du polygone selon le score majoritaire."""
+        if not stats:
+            return "#bdc3c7" # Gris si aucune donnée
+        
+        g = stats.get('pct_gauche', 0)
+        c = stats.get('pct_centre', 0)
+        d = stats.get('pct_droite', 0)
+
+        if g > c and g > d: return "#e74c3c" # Rouge
+        if c > g and c > d: return "#f1c40f" # Jaune/Orange
+        if d > g and d > c: return "#3498db" # Bleu
+        return "#95a5a6"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         service = GeoService()
 
-        # 1. On cache la liste des départements (ça ne change presque jamais)
+        # 1. Liste des départements (Cache 24h)
         departments = cache.get('all_departments')
         if not departments:
             departments = service.get_all_departments()
-            cache.set('all_departments', departments, timeout=60 * 60 * 24)
+            cache.set('all_departments', departments, timeout=86400)
 
-        # 2. Récupération du code sélectionné
-        dept_code = self.request.GET.get('department', '75')
+        # 2. Code département
+        dept_code = self.request.GET.get('department', '93')
         
-        # 3. On cache les données du département pour éviter les appels API inutiles
-        cache_key = f'dept_data_{dept_code}'
+        # 3. Données complètes (Géo + Élections)
+        cache_key = f'full_map_data_{dept_code}'
         data = cache.get(cache_key)
         if not data:
-            data = service.get_department_data(dept_code)
-            cache.set(cache_key, data, timeout=60 * 60 * 2) # Cache 2h
+            data = service.get_full_map_data(dept_code)
+            cache.set(cache_key, data, timeout=7200)
 
         if data:
-            # Création de la carte
             m = folium.Map(
                 location=data['center'], 
-                zoom_start=9,
+                zoom_start=9, 
                 tiles="cartodbpositron"
             )
 
-            # --- LE POINT FAÇON GOOGLE MAPS (Pour la préfecture) ---
+            for commune in data['communes']:
+                if commune['contour']:
+                    stats = commune['stats']
+                    color = self.get_city_color(stats)
+                    
+                    # Préparation du texte du Popup
+                    popup_content = f"""
+                        <strong>{commune['nom']} ({commune['code_insee']})</strong><br/>
+                        Gauche : {stats.get('pct_gauche', 'N/A')}%<br/>
+                        Centre : {stats.get('pct_centre', 'N/A')}%<br/>
+                        Droite : {stats.get('pct_droite', 'N/A')}%<br/>
+                        Abstention : {stats.get('statistics', {}).get('pct_abstention', 'N/A')}%
+                    """
+
+                    folium.GeoJson(
+                        commune['contour'],
+                        name=commune['nom'],
+                        style_function=lambda x, color=color: {
+                            'fillColor': color,
+                            'color': 'white',
+                            'weight': 0.5,
+                            'fillOpacity': 0.7,
+                        },
+                        highlight_function=lambda x: {
+                            'weight': 2,
+                            'color': 'black',
+                            'fillOpacity': 0.9
+                        },
+                        tooltip=commune['nom'],
+                        popup=folium.Popup(popup_content, max_width=250)
+                    ).add_to(m)
+
+            # Marqueur Préfecture
             folium.Marker(
                 location=data['center'],
                 popup=f"Préfecture : {data['dept_nom']}",
-                tooltip="Cliquez pour voir",
-                icon=folium.Icon(color="red", icon="info-sign") # "Pin" classique
+                icon=folium.Icon(color="red", icon="star")
             ).add_to(m)
-
-            # --- LES AUTRES COMMUNES ---
-            for commune in data['communes']:
-                # On évite de doubler le point si c'est la préfecture
-                if commune['nom'] != data['dept_nom']:
-                    folium.CircleMarker(
-                        location=[commune['lat'], commune['lon']],
-                        radius=4,
-                        popup=commune['nom'],
-                        color="#3273dc",
-                        fill=True,
-                        fill_opacity=0.6,
-                        weight=1
-                    ).add_to(m)
 
             context['map'] = m._repr_html_()
             context['dept_nom'] = data['dept_nom']

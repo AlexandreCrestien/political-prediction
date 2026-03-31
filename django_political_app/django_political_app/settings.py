@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'predictions',
     'users',
     'map',
+    'detail'
 ]
 
 MIDDLEWARE = [
