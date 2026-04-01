@@ -1,8 +1,10 @@
 import requests
+import os
+from pathlib import Path
 
 class GeoService:
-    BASE_URL = "https://geo.api.gouv.fr"
-    BASE_URL_LOCAL = "http://0.0.0.0:8080"
+    BASE_URL_LOCAL=os.environ.get("BASE_URL_LOCAL")
+    BASE_URL=os.environ.get("BASE_URL")
 
     def get_all_departments(self):
         url = f"{self.BASE_URL}/departements?fields=nom,code"

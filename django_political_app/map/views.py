@@ -32,7 +32,7 @@ class MapView(LoginRequiredMixin, TemplateView):
             cache.set('all_departments', departments, timeout=86400)
 
         # 2. Code département
-        dept_code = self.request.GET.get('department', '93')
+        dept_code = self.request.GET.get('department', '59')
         
         # 3. Données complètes (Géo + Élections)
         cache_key = f'full_map_data_{dept_code}'
@@ -45,7 +45,7 @@ class MapView(LoginRequiredMixin, TemplateView):
             m = folium.Map(
                 location=data['center'], 
                 zoom_start=9, 
-                tiles="cartodbpositron"
+                tiles="Cartodb dark_matter"
             )
 
             for commune in data['communes']:

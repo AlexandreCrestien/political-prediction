@@ -1,12 +1,13 @@
 import requests
+import os
+from pathlib import Path
 
 class DetailService:
-    BASE_URL = 'http://0.0.0.0:8080'
-
+    BASE_URL_LOCAL = os.environ.get("BASE_URL_LOCAL")
     def get_detail_communes(self, page=1, limit=25, search=None):
         limit = min(int(limit), 100)  # Limite à 100 pour éviter les requêtes trop lourdes
         skip = (page - 1) * limit
-        url = f"{self.BASE_URL}/communes/?skip={skip}&limit={limit}"
+        url = f"{self.BASE_URL_LOCAL}/communes/?skip={skip}&limit={limit}"
         params = {
             "skip": skip,
             "limit": limit
