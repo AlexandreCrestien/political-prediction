@@ -55,7 +55,7 @@
                             <th>% Centre</th>
                             <th>% Droite</th>
                             <th>% Abstention</th>
-                            <th>Pop. Totale</th>
+                            <th>Inscrits</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +68,7 @@
                                 <td class="has-text-warning">{{ item.pct_centre }}%</td>
                                 <td class="has-text-link">{{ item.pct_droite }}%</td>
                                 <td>{{ item.statistics.pct_abstention|default:"-" }}%</td>
-                                <td>{{ item.statistics.POPULATION_TOTAL|default:"-" }}</td>
+                                <td>{{ item.statistics.Inscrits|default:"-" }}</td>
                             </tr>
                         {% empty %}
                             <tr>
