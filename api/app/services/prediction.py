@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 MODEL_DIR = Path(os.getenv("MODEL_DIR", "models"))
 MODEL_FILENAME = os.getenv("MODEL_FILENAME", "")          
-REFERENCE_YEAR_OLD = int(os.getenv("REFERENCE_YEAR_OLD", "2011"))
-REFERENCE_YEAR_NEW = int(os.getenv("REFERENCE_YEAR_NEW", "2022"))
-PROJECTION_YEAR = int(os.getenv("PROJECTION_YEAR", "2027"))
-YEAR_GAP = REFERENCE_YEAR_NEW - REFERENCE_YEAR_OLD       
-PROJECTION_DELTA = PROJECTION_YEAR - REFERENCE_YEAR_NEW  
+REFERENCE_YEARs_OLD = str(os.getenv("REFERENCE_YEARs_OLD", "2012"))
+REFERENCE_YEARs_NEW = str(os.getenv("REFERENCE_YEARs_NEW", "2022"))
+PROJECTION_YEARs = str(os.getenv("PROJECTION_YEARs", "2027"))
+YEARs_GAP = int(REFERENCE_YEARs_NEW) - int(REFERENCE_YEARs_OLD)       
+PROJECTION_DELTA = int(PROJECTION_YEARs) - int(REFERENCE_YEARs_NEW)  
 
 LABEL_MAP: dict[int, str] = {0: "centre", 1: "droite", 2: "gauche"}
 
@@ -68,16 +68,16 @@ def get_model() -> tuple[object, str]:
     return _model_cache[key], path.name
 
 
-def _fetch_stats(db: Session, code_insee: str, year: int) -> CommuneStatsRow:
+def _fetch_stats(db: Session, code_insee: str, years: str) -> CommuneStatsRow:
     row = (
         db.query(CommuneStats)
-        .filter(CommuneStats.code_insee == code_insee, CommuneStats.annee == year)
+        .filter(CommuneStats.code_insee == code_insee, CommuneStats.years == years)
         .first()
     )
     if row is None:
         raise ValueError(
             f"Aucune statistique trouvée pour la commune {code_insee!r} "
-            f"et l'année {year}."
+            f"et l'année {years}."
         )
     return CommuneStatsRow.model_validate(row)
 
@@ -89,12 +89,12 @@ def _project_to_2027(
 ) -> dict[str, float]:
     """
     For every numeric field, compute a linear 2027 projection:
-        projection = new_value + ((new_value - old_value) / YEAR_GAP) * PROJECTION_DELTA
+        projection = new_value + ((new_value - old_value) / YEARs_GAP) * PROJECTION_DELTA
     Values are floored at 0.
     """
     projected: dict[str, float] = {}
     all_fields = list(CommuneStatsRow.model_fields.keys())
-    skip = {"code_insee", "annee"}
+    skip = {"code_insee", "years"}
 
     for field in all_fields:
         if field in skip:
@@ -104,7 +104,7 @@ def _project_to_2027(
         if v_old is None or v_new is None:
             projected[field] = v_new if v_new is not None else 0.0
             continue
-        coeff = (float(v_new) - float(v_old)) / YEAR_GAP
+        coeff = (float(v_new) - float(v_old)) / YEARs_GAP
         projected[field] = max(float(v_new) + coeff * PROJECTION_DELTA, 0.0)
 
     return projected
@@ -152,8 +152,8 @@ def predict(db: Session, code_insee: str) -> PredictionResponse:
         ValueError:       If required DB rows are missing or data is invalid.
         FileNotFoundError: If no model file is found.
     """
-    stats_old = _fetch_stats(db, code_insee, REFERENCE_YEAR_OLD)
-    stats_new = _fetch_stats(db, code_insee, REFERENCE_YEAR_NEW)
+    stats_old = _fetch_stats(db, code_insee, REFERENCE_YEARs_OLD)
+    stats_new = _fetch_stats(db, code_insee, REFERENCE_YEARs_NEW)
 
 
     projected = _project_to_2027(stats_old, stats_new)

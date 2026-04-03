@@ -6,15 +6,15 @@ Base = declarative_base()
 
 class CommuneStats(Base):
     """
-    Raw demographic statistics for a commune, per year.
-    Requires at least year 2011 and 2022 per Code_INSEE
+    Raw demographic statistics for a commune, per years.
+    Requires at least years 2011 and 2022 per Code_INSEE
     to allow 2027 projection at prediction time.
     """
-    __tablename__ = "commune_stats"
+    __tablename__ = "communes_stats"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     code_insee = Column(String(10), nullable=False, index=True)
-    annee = Column(Integer, nullable=False)
+    years = Column(Integer, nullable=False)
 
     population_active = Column(Float, nullable=False)
     population_avec_enfants = Column(Float, nullable=False)
@@ -58,11 +58,11 @@ class CommuneStats(Base):
     couple_avec_enfants = Column(Float, nullable=True)
 
     __table_args__ = (
-        UniqueConstraint("code_insee", "annee", name="uq_commune_annee"),
+        UniqueConstraint("code_insee", "years", name="uq_commune_years"),
     )
 
     def __repr__(self) -> str:
-        return f"<CommuneStats code_insee={self.code_insee!r} annee={self.annee}>"
+        return f"<CommuneStats code_insee={self.code_insee!r} years={self.years}>"
 
 
 class PredictionResult(Base):

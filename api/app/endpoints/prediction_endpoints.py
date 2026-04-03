@@ -9,10 +9,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.schemas.classification_model import PredictionRequest, PredictionResponse, PredictionError
 from app.services.prediction import predict
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = "postgresql+psycopg2://user:password@localhost:5432/predilection"
+DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
