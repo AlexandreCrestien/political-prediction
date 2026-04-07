@@ -8,5 +8,5 @@ router = APIRouter(prefix="/predict", tags=["prediction"])
 
 @router.get("/2027/{code_insee}", response_model=PredictionResponse)
 async def predict_2027(code_insee: str, db: Session = Depends(get_db)):
-    # On utilise le nom du modèle généré par ton TrainService
+
     return PredictionService.predict_2027(db, code_insee, "politique_model.joblib")
