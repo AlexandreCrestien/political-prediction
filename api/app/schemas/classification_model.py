@@ -8,12 +8,12 @@ class PredictionRequest(BaseModel):
     Only the commune's Code_INSEE is required — the service fetches the
     statistics from the database and projects them to 2027.
     """
-    code_insee: str = Field(
+    Code_INSEE: str = Field(
         ...,
         min_length=5,
         max_length=5,
         pattern=r"^\d{5}$",
-        examples=["59001"],
+        examples=["59280"],
         description="Code INSEE à 5 chiffres de la commune.",
     )
 
@@ -22,7 +22,7 @@ class PredictionResponse(BaseModel):
     """
     Successful prediction result.
     """
-    code_insee: str
+    Code_INSEE: str
     prediction: Literal["centre", "droite", "gauche"]
     model_version: str = Field(description="Nom du fichier modèle utilisé.")
 
@@ -31,7 +31,7 @@ class PredictionError(BaseModel):
     """
     Returned when the prediction cannot be completed.
     """
-    code_insee: str
+    Code_INSEE: str
     detail: str
 
 
@@ -42,8 +42,7 @@ class CommuneStatsRow(BaseModel):
     Flat representation of one CommuneStats row, used inside the service.
     Column names match the SQLAlchemy model attributes.
     """
-    code_insee: str
-    annee: int
+    Code_INSEE: str
     population_active: float
     population_avec_enfants: float
 

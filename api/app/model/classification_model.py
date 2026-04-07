@@ -10,11 +10,10 @@ class CommuneStats(Base):
     Requires at least years 2011 and 2022 per Code_INSEE
     to allow 2027 projection at prediction time.
     """
-    __tablename__ = "communes_stats"
+    __tablename__ = "training"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    code_insee = Column(String(10), nullable=False, index=True)
-    years = Column(Integer, nullable=False)
+    Code_INSEE = Column(String(10), primary_key=True, nullable=False, index=True)
+    
 
     population_active = Column(Float, nullable=False)
     population_avec_enfants = Column(Float, nullable=False)
@@ -57,12 +56,8 @@ class CommuneStats(Base):
     couple_sans_enfant = Column(Float, nullable=True)
     couple_avec_enfants = Column(Float, nullable=True)
 
-    __table_args__ = (
-        UniqueConstraint("code_insee", "years", name="uq_commune_years"),
-    )
-
     def __repr__(self) -> str:
-        return f"<CommuneStats code_insee={self.code_insee!r} years={self.years}>"
+        return f"<CommuneStats Code_INSEE={self.Code_INSEE!r}>"
 
 
 class PredictionResult(Base):
@@ -71,8 +66,7 @@ class PredictionResult(Base):
     """
     __tablename__ = "prediction_results"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    code_insee = Column(String(10), nullable=False, index=True)
+    Code_INSEE = Column(String(10),primary_key=True, nullable=False, index=True)
     prediction = Column(String(20), nullable=False)          
     predicted_label_index = Column(Integer, nullable=False)  
     model_version = Column(String(100), nullable=True)       

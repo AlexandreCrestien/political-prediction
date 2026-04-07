@@ -52,14 +52,14 @@ async def predict_commune(
     db: Session = Depends(get_db),
 ) -> PredictionResponse:
     """
-    **Paramètre requis** : `code_insee` — code INSEE à 5 chiffres de la commune.
+    **Paramètre requis** : `Code_INSEE` — code INSEE à 5 chiffres de la commune.
 
     **Réponse** :
     - `prediction` : `"centre"` | `"droite"` | `"gauche"`
     - `model_version` : nom du fichier modèle utilisé
     """
     try:
-        return predict(db=db, code_insee=body.code_insee)
+        return predict(db=db, Code_INSEE=body.Code_INSEE)
 
     except FileNotFoundError as exc:
         logger.exception("Model file missing")
@@ -69,14 +69,14 @@ async def predict_commune(
         ) from exc
 
     except ValueError as exc:
-        logger.warning("Prediction failed for %s: %s", body.code_insee, exc)
+        logger.warning("Prediction failed for %s: %s", body.Code_INSEE, exc)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
 
     except Exception as exc:
-        logger.exception("Unexpected error during prediction for %s", body.code_insee)
+        logger.exception("Unexpected error during prediction for %s", body.Code_INSEE)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Une erreur inattendue s'est produite.",
