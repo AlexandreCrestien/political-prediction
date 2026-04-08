@@ -7,12 +7,25 @@ class GeoService:
     BASE_URL=os.environ.get("BASE_URL")
 
     def get_all_departments(self):
+        """ Récupère la liste de tous les départements.
+
+        Returns:
+            list: Une liste de dictionnaires contenant les informations des départements.
+        """
+        
         url = f"{self.BASE_URL}/departements?fields=nom,code"
         response = requests.get(url)
         return response.json() if response.status_code == 200 else []
 
     def get_election_results_by_department(self, department_code):
+        """ Récupère les résultats des élections pour un département donné.
 
+        Args:
+            department_code (str): Le code du département pour lequel récupérer les résultats.
+
+        Returns:
+            dict: Un dictionnaire contenant les résultats des élections pour le département spécifié.
+        """
         url = f"{self.BASE_URL_LOCAL}/communes/department/{department_code}?year=2022&limit=1000"
         try:
             response = requests.get(url)
@@ -21,6 +34,14 @@ class GeoService:
             return {}
 
     def get_full_map_data(self, department_code):
+        """ Récupère les données complètes pour la carte d'un département, incluant les données géographiques et les résultats des élections.
+
+        Args:
+            department_code (str): Le code du département pour lequel récupérer les données.
+
+        Returns:
+            dict: Un dictionnaire contenant les données complètes pour la carte du département.
+        """
         # 1. Données Géo
         dept_url = f"{self.BASE_URL}/departements/{department_code}?fields=nom,code,chefLieu"
         communes_url = f"{self.BASE_URL}/communes?codeDepartement={department_code}&fields=nom,code,centre,contour"

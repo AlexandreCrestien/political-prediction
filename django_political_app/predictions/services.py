@@ -5,6 +5,14 @@ class PredictionService:
     BASE_URL_LOCAL=os.environ.get("BASE_URL_LOCAL")
 
     def get_prediction_commune(self, code_insee):
+        """ Récupère les prédictions pour une commune donnée.
+
+        Args:
+            code_insee (str): Le code INSEE de la commune pour laquelle récupérer les prédictions.
+
+        Returns:
+            dict: Un dictionnaire contenant les prédictions pour la commune spécifiée.
+        """
         url = f"{self.BASE_URL_LOCAL}/predict/2027/{code_insee}"
         try:
             response = requests.get(url, timeout=10)
@@ -16,6 +24,14 @@ class PredictionService:
             return None
         
     def search_communes(self, query):
+        """ Recherche des communes en fonction d'une requête de recherche.
+
+        Args:
+            query (str): La requête de recherche.
+
+        Returns:
+            list: Une liste de dictionnaires contenant les informations des communes trouvées.
+        """
         # Ajout du / après communes et vérification de la construction de l'URL
         url = f"{self.BASE_URL_LOCAL}/communes/?search={query}&limit=50&light=true"
         try:
