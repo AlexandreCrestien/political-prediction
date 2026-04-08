@@ -26,25 +26,48 @@ class PredictionService:
             dict: Un dictionnaire contenant la prédiction, la confiance, les scores par classe, les features les plus impactantes, et les détails des projections.
         """
         
-        # 1. Extraction SQL (Années 2011 et 2022 pour la pente)
-        query = text("SELECT years, statistics FROM communes_stats WHERE code_insee = :code AND years IN ('2011', '2022')")
+        # 1. Extraction SQL : On prend TOUTES les années disponibles pour cette commune
+        # On ne filtre plus sur '2011'/'2022' car cela rend le service trop rigide
+        query = text("SELECT years, statistics FROM communes_stats WHERE code_insee = :code")
         result = db.execute(query, {"code": code_insee}).fetchall()
 
         if len(result) < 2:
             raise HTTPException(status_code=400, detail="Données historiques 2011/2022 incomplètes.")
 
-        # 2. "Aplatissement" du JSONB vers DataFrame
-        data = [{"Année": int(r.years), **r.statistics} for r in result]
+        # 2. Aplatissement et TRI (Très important pour la pente)
+        data = []
+        for r in result:
+            try:
+                # On force la conversion de l'année en int pour un tri correct
+                year_val = int(r.years) 
+                data.append({"Année": year_val, **r.statistics})
+            except ValueError:
+                continue # Ignore les années mal formées
         df = pd.DataFrame(data).sort_values(by="Année")
 
-        # 3. Projection 2027 (Calcul de la tendance)
-        def project(column):
-            if column.name in ["Année", "Résultat"]: return None
-            v1, v2 = float(column.iloc[0]), float(column.iloc[1])
-            # v2 + (pente sur 11 ans * 5 ans de projection)
-            return max(v2 + ((v2 - v1) / 11 * 5), 0)
+        # 3. Projection 2027 dynamique
+        # On prend la plus vieille année (v1) et la plus récente (v2)
+        v1_row = df.iloc[0]  # Première ligne (ex: 2011 ou 2012)
+        v2_row = df.iloc[-1] # Dernière ligne (ex: 2022)
+        
+        y1 = v1_row["Année"]
+        y2 = v2_row["Année"]
+        delta_t = y2 - y1 # Nombre d'années entre les deux relevés
+        projection_horizon = 2027 - y2 # Nombre d'années à projeter
 
-        projections = df.apply(project).dropna()
+        def project(column_name):
+            if column_name in ["Année", "Résultat"]: return None
+            val1 = float(v1_row[column_name])
+            val2 = float(v2_row[column_name])
+            
+            # Calcul de la pente : (ValeurRécente - ValeurAncienne) / TempsÉcoulé
+            pente_annuelle = (val2 - val1) / delta_t
+            # Projection : ValeurRécente + (Pente * TempsRestant)
+            return max(val2 + (pente_annuelle * projection_horizon), 0)
+
+        # On applique la projection sur toutes les colonnes numériques (sauf Année/Résultat)
+        cols_to_project = [c for c in df.columns if c not in ["Année", "Résultat"]]
+        projections = pd.Series({c: project(c) for c in cols_to_project})
 
         # 4. Gestion du Zéro et calcul des Pourcentages
         pop_active = projections.get('Population_active', 0)
