@@ -17,7 +17,7 @@ class GeoService:
         response = requests.get(url)
         return response.json() if response.status_code == 200 else []
 
-    def get_election_results_by_department(self, department_code):
+    def get_election_results_by_department(self, department_code, year="2022"):
         """ Récupère les résultats des élections pour un département donné.
 
         Args:
@@ -26,14 +26,15 @@ class GeoService:
         Returns:
             dict: Un dictionnaire contenant les résultats des élections pour le département spécifié.
         """
-        url = f"{self.BASE_URL_LOCAL}/communes/department/{department_code}?year=2022&limit=1000"
+
+        url = f"{self.BASE_URL_LOCAL}/communes/department/{department_code}?year={year}&limit=1000"
         try:
             response = requests.get(url)
             return response.json() if response.status_code == 200 else {}
         except Exception:
             return {}
 
-    def get_full_map_data(self, department_code):
+    def get_full_map_data(self, department_code, year="2022"):
         """ Récupère les données complètes pour la carte d'un département, incluant les données géographiques et les résultats des élections.
 
         Args:
@@ -50,7 +51,7 @@ class GeoService:
         geo_communes = requests.get(communes_url).json()
 
         # 2. Données Élections (Transformation en dictionnaire pour accès rapide)
-        election_resp = self.get_election_results_by_department(department_code)
+        election_resp = self.get_election_results_by_department(department_code, year=year)
         election_list = election_resp.get('data', []) if isinstance(election_resp, dict) else election_resp
         election_map = {str(item['code_insee']): item for item in election_list}
 
