@@ -14,6 +14,18 @@ MODELS_DIR = os.path.join(BASE_DIR, "saved_models")
 class PredictionService:
     @staticmethod
     def predict_2027(db: Session, code_insee: str, model_name: str):
+        
+        """Récupère les données historiques d'une commune, projette les tendances à 2027, et utilise un modèle ML pour prédire l'orientation politique.
+
+        Raises:
+            HTTPException:  400 : Si les données historiques sont incomplètes (moins de 2 années disponibles).
+            HTTPException: 500 : Si les fichiers du modèle (binaire ou JSON) sont introuvables.
+            HTTPException: 500 : Si une erreur survient lors du chargement du modèle ou de la prédiction.
+
+        Returns:
+            dict: Un dictionnaire contenant la prédiction, la confiance, les scores par classe, les features les plus impactantes, et les détails des projections.
+        """
+        
         # 1. Extraction SQL (Années 2011 et 2022 pour la pente)
         query = text("SELECT years, statistics FROM communes_stats WHERE code_insee = :code AND years IN ('2011', '2022')")
         result = db.execute(query, {"code": code_insee}).fetchall()

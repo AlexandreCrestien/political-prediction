@@ -9,6 +9,12 @@ from app.schemas.train import TrainSettings
 class TrainService:
     @staticmethod
     def run_pipeline(settings: TrainSettings, db_engine):
+        """ Exécute le pipeline complet de training : extraction, nettoyage, préparation, entraînement, et sauvegarde du modèle et de ses métadonnées.
+
+        Args:
+            settings (TrainSettings):  Un objet contenant les paramètres d'entraînement, notamment le nom du modèle, la taille du test, et le nombre d'estimators pour le Random Forest.
+            db_engine (_type_):  L'instance de connexion à la base de données pour extraire les données d'entraînement.
+        """
         try:
             # 1. Extraction
             query = "SELECT * FROM training"

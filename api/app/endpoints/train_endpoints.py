@@ -11,6 +11,15 @@ async def launch_model_training(
     settings: TrainSettings, 
     background_tasks: BackgroundTasks
 ):
+    """Lance le service d'entraînement du modèle
+
+    Args:
+        settings (TrainSettings): Paramètres d'entraînement du modèle
+        background_tasks (BackgroundTasks): Tâches en arrière-plan
+
+    Returns:
+        dict: Statut de la tâche
+    """
     # On délègue la tâche au service en arrière-plan
     background_tasks.add_task(TrainService.run_pipeline, settings, engine)
     
