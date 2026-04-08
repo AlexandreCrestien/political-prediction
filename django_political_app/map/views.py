@@ -37,7 +37,12 @@ class MapView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         service = GeoService()
 
-        # 1. Liste des départements (Cache 24h)
+        # 1. Récupération des paramètres de l'URL
+        # On récupère 'department' (défaut 59) et 'year' (défaut 2022)
+        dept_code = self.request.GET.get('department', '59')
+        year = self.request.GET.get('year', '2022')
+
+        # 2. Gestion des départements (Cache long : 24h)
         departments = cache.get('all_departments')
         if not departments:
             departments = service.get_all_departments()
@@ -46,14 +51,16 @@ class MapView(LoginRequiredMixin, TemplateView):
         # 2. Code département
         dept_code = self.request.GET.get('department', '59')
         
-        # 3. Données complètes (Géo + Élections)
-        cache_key = f'full_map_data_{dept_code}'
+        # 3. DONNÉES DE LA CARTE (Cache moyen : 2h)
+        # On inclut l'année dans la clé pour séparer les résultats 2012, 2017 et 2022
+        cache_key = f'full_map_data_{dept_code}_{year}'
         data = cache.get(cache_key)
         if not data:
-            data = service.get_full_map_data(dept_code)
+            data = service.get_full_map_data(dept_code, year=year)
             cache.set(cache_key, data, timeout=7200)
 
         if data:
+            # Création de la carte Folium (Logique inchangée)
             m = folium.Map(
                 location=data['center'], 
                 zoom_start=9, 
@@ -99,9 +106,13 @@ class MapView(LoginRequiredMixin, TemplateView):
                 icon=folium.Icon(color="red", icon="star")
             ).add_to(m)
 
-            context['map'] = m._repr_html_()
-            context['dept_nom'] = data['dept_nom']
-            context['current_dept'] = dept_code
-            context['departments'] = departments
+            # Mise à jour du contexte pour le template HTML
+            context.update({
+                'map': m._repr_html_(),
+                'dept_nom': data['dept_nom'],
+                'current_dept': dept_code,
+                'current_year': year, # Très important pour colorer le bon bouton
+                'departments': departments,
+            })
         
         return context

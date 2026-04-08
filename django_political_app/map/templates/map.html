@@ -5,6 +5,23 @@
     <div class="container">
         <h1 class="title">Explorateur de départements : {{ dept_nom }}</h1>
         
+        <div class="fixed-grid has-8-cols">
+            <div class="grid">
+                <div class="cell is-col-span-2">
+                    <strong style="color: blue;">Séléctionner une commune:</strong>
+                </div>
+                <div class="cell is-col-span-1">
+                    <a class="button {% if current_year == '2012' %}is-link is-selected has-text-weight-bold{% endif %}" href="?department={{ current_dept }}&year=2012">2012</a>
+                </div>
+                <div class="cell is-col-span-1">
+                    <a class="button {% if current_year == '2017' %}is-link is-selected has-text-weight-bold{% endif %}" href="?department={{ current_dept }}&year=2017">2017</a>
+                </div>
+                <div class="cell is-col-span-1">
+                    <a class="button {% if current_year == '2022' %}is-link is-selected has-text-weight-bold{% endif %}" href="?department={{ current_dept }}&year=2022">2022</a>
+                </div>
+            </div>
+
+        </div>
         <div class="fixed-grid has-4-cols">
             <div class="grid">
                 <div class="cell is-col-span-3">
