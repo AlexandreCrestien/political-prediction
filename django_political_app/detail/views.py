@@ -9,6 +9,11 @@ class DetailView(LoginRequiredMixin,TemplateView):
     template_name = 'detail.html'
 
     def get_context_data(self, **kwargs):
+        """ Récupère les détails des communes avec pagination et recherche, puis prépare le contexte pour le template.
+
+        Returns:
+            dict: Un dictionnaire contenant les détails des communes, le nombre total, la page actuelle et la limite.
+        """
         context = super().get_context_data(**kwargs)
         # Récupère la page depuis l'URL, défaut à 1
         page = int(self.request.GET.get('page', 1))

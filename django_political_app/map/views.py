@@ -8,7 +8,14 @@ class MapView(LoginRequiredMixin, TemplateView):
     template_name = 'map.html'
 
     def get_city_color(self, stats):
-        """Détermine la couleur du polygone selon le score majoritaire."""
+        """ Détermine la couleur d'une commune en fonction de ses résultats électoraux.
+
+        Args:
+            stats (dict): Un dictionnaire contenant les résultats électoraux de la commune.
+
+        Returns:
+            str: La couleur à utiliser pour le polygone de la commune.
+        """
         if not stats:
             return "#bdc3c7" # Gris si aucune donnée
         
@@ -22,6 +29,11 @@ class MapView(LoginRequiredMixin, TemplateView):
         return "#95a5a6"
 
     def get_context_data(self, **kwargs):
+        """ Prépare le contexte pour la vue de la carte, incluant les données géographiques et électorales nécessaires pour afficher la carte interactive.
+    
+        Returns:            
+            dict: Un dictionnaire contenant les données nécessaires pour rendre la carte dans le template.
+        """
         context = super().get_context_data(**kwargs)
         service = GeoService()
 
