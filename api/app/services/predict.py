@@ -1,0 +1,99 @@
+import pandas as pd
+import joblib
+import os
+import json
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from fastapi import HTTPException
+
+# On récupère le chemin du dossier 'api' (2 niveaux au dessus de ce fichier service)
+# predict.py -> services/ -> app/ -> api/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODELS_DIR = os.path.join(BASE_DIR, "saved_models")
+
+class PredictionService:
+    @staticmethod
+    def predict_2027(db: Session, code_insee: str, model_name: str):
+        # 1. Extraction SQL (Années 2011 et 2022 pour la pente)
+        query = text("SELECT years, statistics FROM communes_stats WHERE code_insee = :code AND years IN ('2011', '2022')")
+        result = db.execute(query, {"code": code_insee}).fetchall()
+
+        if len(result) < 2:
+            raise HTTPException(status_code=400, detail="Données historiques 2011/2022 incomplètes.")
+
+        # 2. "Aplatissement" du JSONB vers DataFrame
+        data = [{"Année": int(r.years), **r.statistics} for r in result]
+        df = pd.DataFrame(data).sort_values(by="Année")
+
+        # 3. Projection 2027 (Calcul de la tendance)
+        def project(column):
+            if column.name in ["Année", "Résultat"]: return None
+            v1, v2 = float(column.iloc[0]), float(column.iloc[1])
+            # v2 + (pente sur 11 ans * 5 ans de projection)
+            return max(v2 + ((v2 - v1) / 11 * 5), 0)
+
+        projections = df.apply(project).dropna()
+
+        # 4. Gestion du Zéro et calcul des Pourcentages
+        pop_active = projections.get('Population_active', 0)
+        pop_enfants = projections.get('Population avec enfants', 0)
+
+        # Listes des colonnes à transformer
+        labels_active = ['Hommes', 'Femmes', 'Agriculteurs', 'Artisans', 'Cadres', 'Intermédiaires', 'Employés', 'Ouvriers', 'Retraités', 'Etudiants', 'Inactifs', '15-24 ans', '25-39 ans', '40-54 ans', '55-64 ans', '65-79 ans', '80 ans et +', 'Mariés', 'Pacsés', 'Concubinage', 'Veufs', 'Divorcés', 'Célibataires']
+        labels_menages = ['Personne seule', 'Homme seul', 'Femme seule', 'Colocation', 'Famille', 'Famille monoparentale', 'Couple sans enfant', 'Couple avec enfants']
+
+        # Application sécurisée (si pop_active est 0, on met 0 au lieu de crash)
+        for l in labels_active:
+            projections[l] = (projections[l] / pop_active * 100) if pop_active > 0 else 0.0
+        for l in labels_menages:
+            projections[l] = (projections[l] / pop_enfants * 100) if pop_enfants > 0 else 0.0
+
+        # On construit le chemin absolu
+        
+        model_path = os.path.join(MODELS_DIR, model_name)
+        
+        # On remplace .joblib par .json proprement
+        meta_name = model_name.replace(".joblib", ".json")
+        meta_path = os.path.join(MODELS_DIR, meta_name)
+
+        # --- SÉCURITÉ : Vérification de l'existence des DEUX fichiers ---
+        if not os.path.exists(model_path):
+            raise HTTPException(status_code=500, detail=f"Modèle binaire introuvable : {model_path}")
+
+        if not os.path.exists(meta_path):
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Métadonnées JSON introuvables : {meta_path}. Relancez un entraînement."
+            )
+
+        # --- CHARGEMENT : Un avec joblib ---
+        model = joblib.load(model_path)  # Chargement binaire
+
+        with open(meta_path, "r", encoding="utf-8") as f:
+            meta = json.load(f)          # Chargement texte
+        # 6. Alignement et Prédiction
+        # On force l'ordre des colonnes via meta["features_order"]
+        X = projections.to_frame().T[meta["features_order"]]
+        
+        # On prédit la classe (ex: "Gauche", "Droite", "Centre")
+        prediction_value = model.predict(X)[0]
+
+        # On récupère les probabilités pour calculer la confiance
+        proba = model.predict_proba(X)[0]
+
+        # On convertit la confiance en pourcentage (ex: 0.85 -> 85.0%)
+        confiance = round(float(max(proba)) * 100, 2)
+
+        # Creation d'un dictionnaire des scores
+        scores = {str(c): round(float(p) * 100, 2) for c, p in zip(model.classes_, proba)}
+
+        # 7. Retour avec les features les plus impactantes
+        return {
+            "code_insee": code_insee,
+            "prediction_2027": str(prediction_value),
+            "confiance_percent": confiance,
+            "scores": scores,
+            "top_features": dict(list(meta["feature_importances"].items())[:5]), # Top 5
+            "details_predictions": projections.to_dict(),
+            "status": "success"
+        }
