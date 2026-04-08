@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from app.model.communes import Communes
 
 class CommuneService:
@@ -13,32 +13,75 @@ class CommuneService:
         return result.scalars().all()
     
     @staticmethod
-    def get_all(db: Session, skip: int = 0, limit: int = 100, search: str = None):
-        # Base des requêtes
-        total_query = select(func.count()).select_from(Communes)
-        data_query = select(Communes)
+    def get_all(db: Session, skip: int = 0, limit: int = 100, search: str = None, light: bool = False):
+        if light:
+            # On sélectionne uniquement les deux colonnes
+            data_query = select(Communes.code_insee, Communes.city).distinct()
+        else:
+            data_query = select(Communes)
 
-        # Application du filtre de recherche si présent
-        if search and search.lower() not in ["none", "null", ""]:
-            # .ilike(f"%{search}%") cherche les noms contenant la chaîne
-            filter_stmt = Communes.city.ilike(f"%{search}%")
+        total_query = select(func.count()).select_from(Communes)
+
+        if search and search.strip():
+            filter_stmt = or_(
+                Communes.city.ilike(f"%{search}%"),
+                Communes.code_insee.ilike(f"{search}%")
+            )
             total_query = total_query.where(filter_stmt)
             data_query = data_query.where(filter_stmt)
 
-        # 1. Compter le total
         total = db.execute(total_query).scalar() or 0
-
-        # 2. Récupérer les données avec pagination
         data_query = data_query.offset(skip).limit(limit)
-        data = db.execute(data_query).scalars().all()
-
-        return total, data
+        
+        result = db.execute(data_query)
+        
+        if light:
+            # mappings().all() transforme les lignes en dictionnaires {'code_insee': ..., 'city': ...}
+            return total, result.mappings().all()
+        
+        return total, result.scalars().all()
     
     @staticmethod
-    def get_by_department(db: Session, department_code: str, year: str = None):
+    def get_by_department(db: Session, department_code: str, year: str = None, light: bool = False):
+        if light:
+            # Mode Carte : Sélection restreinte pour alléger les données
+            query = select(
+                Communes.code_insee, 
+                Communes.city, 
+                Communes.pct_gauche, 
+                Communes.pct_centre,
+                Communes.pct_droite,
+                Communes.years
+            )
+        else:
+            # Mode Tableau : Object complet (Toutes les colonnes + JSON)
+            query = select(Communes)
+        # Filtres communes
         query = select(Communes).where(Communes.code_insee.startswith(department_code))
         if year:
             query = query.where(Communes.years == year)
+
+        result = db.execute(query)
+
+        if light:
+            # Pour la sélection de colonnes, on renvoie des dictionnaires
+            return [dict(row) for row in result.mappings().all()]
+        # Pour l'objet complet, on renvoie les instances du modèle
+        return result.scalars().all()
+    
+    
+    @staticmethod
+    def get_by_region(db: Session, department_codes: list[str], year: str = "2022"):
+        """
+        Récupère toutes les communes pour une liste de départements (une région).
+        department_codes ex: ['59', '62'] pour les Hauts-de-France (partiel)
+        """
+        # Construction d'une clause OR pour chaque département
+        filters = [Communes.code_insee.startswith(code) for code in department_codes]
         
+        query = select(Communes).where(or_(*filters))
+        if year:
+            query = query.where(Communes.years == year)
+            
         result = db.execute(query)
         return result.scalars().all()

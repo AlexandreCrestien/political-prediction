@@ -1,6 +1,12 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Union
+
+# Schéma léger pour l'autocomplétion
+class CommuneLight(BaseModel):
+    code_insee: str
+    city: str
+    model_config = ConfigDict(from_attributes=True)
 
 class CommuneResponse(BaseModel):
     id: int
@@ -12,12 +18,11 @@ class CommuneResponse(BaseModel):
     pct_droite: float
     statistics: Optional[dict[str, Any]] = None
     updated_at: datetime
-
-    # Permet de convertir l'objet SQLAlchemy en Pydantic automatiquement
     model_config = ConfigDict(from_attributes=True)
 
 class PaginatedCommuneResponse(BaseModel):
     total: int
     page: int
     limit: int
-    data: List[CommuneResponse]
+    # Union permet d'accepter soit la liste complète, soit la liste légère
+    data: List[Union[CommuneResponse, CommuneLight]]

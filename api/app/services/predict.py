@@ -84,11 +84,15 @@ class PredictionService:
         # On convertit la confiance en pourcentage (ex: 0.85 -> 85.0%)
         confiance = round(float(max(proba)) * 100, 2)
 
+        # Creation d'un dictionnaire des scores
+        scores = {str(c): round(float(p) * 100, 2) for c, p in zip(model.classes_, proba)}
+
         # 7. Retour avec les features les plus impactantes
         return {
             "code_insee": code_insee,
             "prediction_2027": str(prediction_value),
             "confiance_percent": confiance,
+            "scores": scores,
             "top_features": dict(list(meta["feature_importances"].items())[:5]), # Top 5
             "details_predictions": projections.to_dict(),
             "status": "success"
