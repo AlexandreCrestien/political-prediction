@@ -78,7 +78,7 @@ class MapView(LoginRequiredMixin, TemplateView):
                         Gauche : {stats.get('pct_gauche', 'N/A')}%<br/>
                         Centre : {stats.get('pct_centre', 'N/A')}%<br/>
                         Droite : {stats.get('pct_droite', 'N/A')}%<br/>
-                        Abstention : {stats.get('statistics', {}).get('pct_abstention', 'N/A')}%
+                        Abstention : {stats.get('statistics', {}).get('% Abs/Ins', 'N/A')}%
                     """
 
                     folium.GeoJson(

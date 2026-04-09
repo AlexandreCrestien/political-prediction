@@ -11,7 +11,7 @@ class PredictionsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # 1. Récupération du code INSEE depuis l'URL (?code_insee=59009)
+        # 1. Récupération du code INSEE depuis l'URL
         code_insee = self.request.GET.get('code_insee', '').strip()
         
         context['search_query'] = code_insee
@@ -37,7 +37,7 @@ def commune_autocomplete(request):
         return JsonResponse({'results': []})
     
     service = PredictionService()
-    # search_communes renvoie déjà la liste 'data'
+    
     communes = service.search_communes(query=query)
     
     results = []
