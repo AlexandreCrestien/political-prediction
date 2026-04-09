@@ -14,6 +14,26 @@
     }
     .ts-dropdown { border-radius: 8px !important; margin-top: 5px !important; }
     .prediction-card { border-radius: 12px; height: 100%; border: 1px solid #f0f0f0; }
+
+    /* Par défaut (Centre/Autre) */
+    .prediction-card-bg-centre {
+        background: linear-gradient(135deg, #ffdd57, #f39c12);
+    }
+
+    .prediction-card-bg-gauche {
+        background: linear-gradient(135deg, #ed4444, #f07070);
+    }
+
+    .prediction-card-bg-droite {
+        background: linear-gradient(135deg, #4461f2, #7085f5);
+    }
+
+    /* On garde les styles communs ici */
+    .card.mb-5 {
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 </style>
 
 <section class="section has-background-light" style="min-height: 100vh;">
@@ -53,15 +73,12 @@
 
         {% if prediction_data %}
         <div class="mt-6">
-            <h2 class="title is-5 mb-5"><span class="icon has-text-link mr-2">📊</span> Analyse prévisionnelle</h2>
+            <h2 class="title is-5 mb-5"><span class="icon has-text-link mr-2">📊</span> Analyse prévisionnelle: <strong>{{ prediction_data.city }}</strong></h2>
 
             <div class="columns">
                 <div class="column is-5">
                     
-                    <div class="card mb-5" style="border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: 
-                        {% if prediction_data.prediction_2027 == 'gauche' %}linear-gradient(135deg, #ed4444, #f07070)
-                        {% elif prediction_data.prediction_2027 == 'droite' %}linear-gradient(135deg, #4461f2, #7085f5)
-                        {% else %}linear-gradient(135deg, #ffdd57, #f39c12){% endif %};">
+                    <div class="card mb-5 prediction-card-bg-{{ prediction_data.prediction_2027 }}">
                         <div class="card-content p-5">
                             <p class="is-size-7 is-uppercase has-text-weight-bold" style="letter-spacing: 1px;">Camp en tête :</p>
                             <div class="is-flex is-align-items-center mt-4">
@@ -74,7 +91,7 @@
                         </div>
                     </div>
 
-                    <div class="card prediction-card">
+                    <div class="card">
                         <header class="card-header is-shadowless">
                             <p class="card-header-title">
                                 <span class="icon has-text-link mr-2">🔄</span> Facteurs déterminants

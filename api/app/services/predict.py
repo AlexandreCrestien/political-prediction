@@ -28,14 +28,20 @@ class PredictionService:
         
         # 1. Extraction SQL : On prend TOUTES les années disponibles pour cette commune
         # On ne filtre plus sur '2011'/'2022' car cela rend le service trop rigide
-        query = text("SELECT years, statistics FROM communes_stats WHERE code_insee = :code")
+        query = text("SELECT city, years, statistics FROM communes_stats WHERE code_insee = :code")
         result = db.execute(query, {"code": code_insee}).fetchall()
 
         if len(result) < 2:
             raise HTTPException(status_code=400, detail="Données historiques 2011/2022 incomplètes.")
+        
+        # On récupère le nom de la ville depuis la première ligne du résultat
+        city_name = result[0].city if result else "Commune inconnue"
 
         # 2. Aplatissement et TRI (Très important pour la pente)
-        data = []
+        data = []# On récupère le nom de la ville depuis la première ligne du résultat
+        # On récupère le nom de la ville depuis la première ligne du résultat
+        city_name = result[0].city if result else "Commune inconnue"
+
         for r in result:
             try:
                 # On force la conversion de l'année en int pour un tri correct
@@ -125,6 +131,7 @@ class PredictionService:
         # 7. Retour avec les features les plus impactantes
         return {
             "code_insee": code_insee,
+            "city": city_name,
             "prediction_2027": str(prediction_value),
             "confiance_percent": confiance,
             "scores": scores,
