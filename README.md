@@ -164,6 +164,20 @@ FastAPI génère automatiquement une documentation interactive :
 pytest --cov=django_political_app --cov=api/app --cov-report=term-missing --ignore=api/test_db.py -v
 ```
 
+### Monitoring du modèle de prédiction
+- **MLflow** : Utilisé pour suivre les expériences de machine learning, les métriques et les modèles. Accédez à l'interface MLflow pour visualiser les résultats des entraînements et les comparaisons entre les modèles.
+
+Exécutez MLflow avec la commande suivante :
+
+```bash
+pip install mlflow
+
+cd ml
+python monitoring.py
+mlflow ui
+```
+
+À noter que le monitoring du modèle est basé sur une version antérieure du projet, et que les données utilisées pour le monitoring ne sont pas à jour. Par conséquent, les résultats affichés dans MLflow peuvent ne pas refléter les performances actuelles du modèle de prédiction.
 ---
 
 ## 👥 Auteurs
