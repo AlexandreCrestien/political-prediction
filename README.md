@@ -76,6 +76,8 @@ Predil'ection est une **Application web** conçue pour prédire les résultats d
 │   ├── templates
 │   ├── users
 │   └── manage.py
+├── docs
+│   ├── Présentation
 ├── eda
 ├── maquette
 ├── ml
