@@ -9,6 +9,11 @@ class PredictionsView(LoginRequiredMixin, TemplateView):
     template_name = 'predictions.html'
 
     def get_context_data(self, **kwargs):
+        """Récupère les données du contexte pour la vue.
+
+        Returns:
+            _type_: Les données du contexte.
+        """
         context = super().get_context_data(**kwargs)
         
         # 1. Récupération du code INSEE depuis l'URL
@@ -31,6 +36,14 @@ class PredictionsView(LoginRequiredMixin, TemplateView):
     
 
 def commune_autocomplete(request):
+    """ Gère les requêtes d'autocomplétion pour les communes.
+
+    Args:
+        request (_type_): Requête GET contenant au minimum 1 caractère pour la recherche de communes.
+
+    Returns:
+        _type_: Réponse JSON contenant les résultats d'autocomplétion.
+    """
     query = request.GET.get('q', '').strip()
     
     if len(query) < 1: # On a dit 1 pour plus de réactivité !
