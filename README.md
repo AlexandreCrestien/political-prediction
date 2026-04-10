@@ -127,8 +127,13 @@ Predil'ection est une **Application web** conçue pour prédire les résultats d
 5. **Initialiser la base de données**
 
    ```bash
-   # Appliquer les migrations Alembic
-   alembic upgrade head
+   cd data 
+   ```
+   exécutez df_election_2012 df_election_2017 full_df_final full_stat pour créer les tables et insérer les données dans la base de données.
+
+   ```bash
+   sudo -u postgres psql -c "CREATE DATABASE predilection;"
+   sudo -u postgres psql -d predilection -f data/insert_communes.sql
    ```
 6. **Lancer l'application**
    fastapi :
