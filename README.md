@@ -130,8 +130,13 @@ Predil'ection est une **Application web** conçue pour prédire les résultats d
 5. **Initialiser la base de données**
 
    ```bash
-   # Appliquer les migrations Alembic
-   alembic upgrade head
+   cd data 
+   ```
+   exécutez df_election_2012 df_election_2017 full_df_final full_stat pour créer les tables et insérer les données dans la base de données.
+
+   ```bash
+   sudo -u postgres psql -c "CREATE DATABASE predilection;"
+   sudo -u postgres psql -d predilection -f data/insert_communes.sql
    ```
 6. **Lancer l'application**
    fastapi :
@@ -167,6 +172,20 @@ FastAPI génère automatiquement une documentation interactive :
 pytest --cov=django_political_app --cov=api/app --cov-report=term-missing --ignore=api/test_db.py -v
 ```
 
+### Monitoring du modèle de prédiction
+- **MLflow** : Utilisé pour suivre les expériences de machine learning, les métriques et les modèles. Accédez à l'interface MLflow pour visualiser les résultats des entraînements et les comparaisons entre les modèles.
+
+Exécutez MLflow avec la commande suivante :
+
+```bash
+pip install mlflow
+
+cd ml
+python monitoring.py
+mlflow ui
+```
+
+À noter que le monitoring du modèle est basé sur une version antérieure du projet, et que les données utilisées pour le monitoring ne sont pas à jour. Par conséquent, les résultats affichés dans MLflow peuvent ne pas refléter les performances actuelles du modèle de prédiction.
 ---
 
 ## 👥 Auteurs
