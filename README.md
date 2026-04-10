@@ -1,3 +1,4 @@
+![Démo](django_political_app/static/images/demo.gif)
 
 # Political Prediction
 
