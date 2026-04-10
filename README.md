@@ -33,13 +33,20 @@ Predil'ection est une **Application web** conçue pour prédire les résultats d
 
 ## 🏗️ Architecture
 
+### Sources de données
+- **Données électorales** : Récupérées depuis des sources officielles telles que data.gouv.fr.
+- **Données démographiques** : Intégration de données démographiques (INSEE) pour améliorer les prédictions.
+- **Données géographiques** : Utilisation de données géographiques pour la visualisation sur la carte interactive.
+
 ### Stack technique
 
-- **Framework :** FastAPI
+- **Frontend :** Django avec HTML, CSS (Bulma)
+- **Backend :** FastAPI
 - **Base de données :** SQLAlchemy ORM + PostgreSQL
-- **Migrations :** Alembic
-- **Authentification :** JWT (JSON Web Tokens)
-- **Validation :** Pydantic
+- **Carte interactive** Framework CSS Folium pour la visualisation des données géographiques
+- **Authentification :** Django Auth
+- **Tests :** Pytest avec couverture de code
+- **Documentation :** Swagger UI et ReDoc et commentaires détaillés dans le code
 
 ### Structure du projet
 
